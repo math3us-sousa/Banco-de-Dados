@@ -7,13 +7,35 @@ def tela_inicial(request):
     
 # ========== DESTINOS ==========
 def listar_destinos(request):
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT id_destino, nome, localizacao 
-            FROM destinos 
-            ORDER BY nome
-        """)
-        destinos = cursor.fetchall()
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        localizacao = request.POST.get('localizacao')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO destinos (nome, localizacao)
+                VALUES (%s, %s)
+            """, [nome, localizacao])
+        return redirect('listar_destinos')
+
+    id_busca = request.GET.get('id_busca')
+    if id_busca:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_destino, nome, localizacao
+                FROM destinos
+                WHERE id_destino = %s
+            """, [id_busca])
+            destinos = cursor.fetchall()
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_destino, nome, localizacao
+                FROM destinos
+                ORDER BY nome
+            """)
+            destinos = cursor.fetchall()
+
     return render(request, 'app_viagens/destinos.html', {'destinos': destinos})
 
 def inserir_destino(request):
@@ -35,21 +57,24 @@ def editar_destino(request, id):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         localizacao = request.POST.get('localizacao')
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE destinos
-                    SET nome = %s, localizacao = %s
-                    WHERE id_destino = %s
-                """, [nome, localizacao, id])
-            return redirect('listar_destinos')
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE destinos
+                SET nome = %s, localizacao = %s
+                WHERE id_destino = %s
+            """, [nome, localizacao, id])
+        return redirect('listar_destinos')
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT nome, localizacao FROM destinos WHERE id_destino = %s", [id])
+        cursor.execute("""
+            SELECT id_destino, nome, localizacao
+            FROM destinos
+            WHERE id_destino = %s
+        """, [id])
         destino = cursor.fetchone()
-    return render(request, 'app_viagens/editar_destino.html', {'destino': destino, 'id': id})
+
+    return render(request, 'app_viagens/editar_destino.html', {'destino': destino})
 
 def excluir_destino(request, id):
     with connection.cursor() as cursor:
