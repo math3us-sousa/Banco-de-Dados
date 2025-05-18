@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <meta charset="utf-8">
+    <title>Viajantes</title>
+    <style>
+        /* (estilo mantido igual ao original, já embutido) */
+        body {
+            background-image: url('https://img.freepik.com/fotos-gratis/pinos-coloridos-multi-apontando-destinos-planejados-no-mapa_23-2147837130.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            height: 100vh;
+            background-color: orange;
+        }
+        .botao-voltar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .btn-voltar {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            margin: 8px;
+            border: 2px solid white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .btn-voltar:hover {
+            background-color: white;
+            color: white;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 165, 0, 0.7);
+            z-index: 0;
+        }
+        header.topo {
+            position: relative;
+            width: 100%;
+            padding: 10px 20px;
+            height: 80px;
+            background: transparent;
+            z-index: 2;
+        }
+        .titulo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: white;
+        }
+        .viajantes {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+        table th, table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        table th {
+            background-color: orange;
+            color: white;
+        }
+        table td {
+            color: black;
+        }
+        form {
+            margin-top: 30px;
+        }
+        form input {
+            padding: 10px;
+            margin: 5px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        form button {
+            padding: 10px 20px;
+            background-color: orange;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: darkorange;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <header class="topo">
+        <h1 class="titulo">Viajantes</h1>
+    </header>
+
+    <main class="viajantes">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Destino Favorito</th>
+                    <th>Data de Cadastro</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in viajantes %}
+                <tr>
+                    <td>{{ v.0 }}</td>
+                    <td>{{ v.1 }}</td>
+                    <td>{{ v.2 }}</td>
+                    <td>{{ v.3 }}</td>
+                    <td><!-- Ações (editar, excluir) --></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="botao-voltar">
+            <a href="{% url 'tela_inicial' %}" class="btn-voltar">Voltar para Início</a>
+        </div>
+
+        <h2>Adicionar Novo Viajante</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="nome" placeholder="Nome" required>
+            <input type="text" name="destino_favorito" placeholder="Destino Favorito" required>
+            <input type="date" name="data_cadastro" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </main>
+
+    <script src="viajantes.js"></script>
+</body>
+</html>

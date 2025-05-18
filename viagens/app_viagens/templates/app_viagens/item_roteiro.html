@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <meta charset="utf-8">
+    <title>Itens de Roteiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-image: url('https://img.freepik.com/fotos-gratis/pinos-coloridos-multi-apontando-destinos-planejados-no-mapa_23-2147837130.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            height: 100vh;
+            background-color: orange;
+            position: relative;
+            z-index: 1;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 165, 0, 0.7);
+            z-index: 0;
+        }
+
+        header.topo {
+            position: relative;
+            width: 100%;
+            padding: 10px 20px;
+            height: 80px;
+            background: transparent;
+            z-index: 2;
+        }
+
+        .titulo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: white;
+        }
+
+        .botao-voltar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .btn-voltar {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            margin: 8px;
+            border: 2px solid white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-voltar:hover {
+            background-color: white;
+            color: orange;
+        }
+
+        main.item-roteiro {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+
+        table th, table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: orange;
+            color: white;
+            font-weight: bold;
+        }
+
+        table td {
+            color: black;
+        }
+
+        form {
+            margin-top: 30px;
+        }
+
+        form input {
+            padding: 10px;
+            margin: 5px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        form button {
+            padding: 10px 20px;
+            background-color: orange;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: darkorange;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <header class="topo">
+        <h1 class="titulo">Itens de Roteiro</h1>
+    </header>
+
+    <main class="item-roteiro">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Roteiro</th>
+                    <th>ID Destino</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.0 }}</td>
+                    <td>{{ item.1 }}</td>
+                    <td><!-- ações --></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="botao-voltar">
+            <a href="{% url 'tela_inicial' %}" class="btn-voltar">Voltar para Início</a>
+        </div>
+
+        <h2>Adicionar Novo Item</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="number" name="id_roteiro" placeholder="ID Roteiro" required>
+            <input type="number" name="id_destino" placeholder="ID Destino" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </main>
+</body>
+</html>

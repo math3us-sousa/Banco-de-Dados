@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <meta charset="utf-8">
+    <title>Turismo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-image: url('https://img.freepik.com/fotos-gratis/pinos-coloridos-multi-apontando-destinos-planejados-no-mapa_23-2147837130.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            height: 100vh;
+            background-color: orange;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 165, 0, 0.7);
+            z-index: 1;
+        }
+
+        .conteudo {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+            padding-top: 80px;
+        }
+
+        .logo-pequena {
+            width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            margin: 8px;
+            border: 2px solid white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: white;
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="conteudo">
+        <img src="{% static 'app_viagens/arquivos/avião.png' %}" alt="Logo" class="logo-pequena">
+        <div class="buttons">
+            <a href="{% url 'listar_viajantes' %}" class="btn">Viajantes</a>
+            <a href="{% url 'listar_destinos' %}" class="btn">Destinos</a>
+            <a href="{% url 'listar_roteiros' %}" class="btn">Roteiros</a>
+            <a href="{% url 'listar_historicos' %}" class="btn">Históricos</a>
+            <a href="{% url 'listar_guias' %}" class="btn">Guias</a>
+            <a href="{% url 'listar_itens_roteiro' %}" class="btn">Item Roteiro</a>
+        </div>
+    </div>
+</body>
+</html>
