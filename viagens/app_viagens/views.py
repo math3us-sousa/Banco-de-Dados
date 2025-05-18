@@ -288,13 +288,36 @@ def excluir_historico(request, id):
 # ========== VIAJANTES ==========
 
 def listar_viajantes(request):
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT id_viajante, nome, destino_favorito, data_de_cadastro
-            FROM viajantes
-            ORDER BY nome
-        """)
-        viajantes = cursor.fetchall()
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        destino_favorito = request.POST.get('destino_favorito')
+        data_cadastro = request.POST.get('data_cadastro')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO viajantes (nome, destino_favorito, data_de_cadastro)
+                VALUES (%s, %s, %s)
+            """, [nome, destino_favorito, data_cadastro])
+        return redirect('listar_viajantes')
+
+    id_busca = request.GET.get('id_busca')
+    if id_busca:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_viajante, nome, destino_favorito, data_de_cadastro
+                FROM viajantes
+                WHERE id_viajante = %s
+            """, [id_busca])
+            viajantes = cursor.fetchall()
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_viajante, nome, destino_favorito, data_de_cadastro
+                FROM viajantes
+                ORDER BY nome
+            """)
+            viajantes = cursor.fetchall()
+
     return render(request, 'app_viagens/viajantes.html', {'viajantes': viajantes})
 def inserir_viajante(request):
     if request.method == 'POST':
@@ -313,6 +336,7 @@ def editar_viajante(request, id):
         nome = request.POST.get('nome')
         destino_favorito = request.POST.get('destino_favorito')
         data_cadastro = request.POST.get('data_cadastro')
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE viajantes
@@ -320,18 +344,17 @@ def editar_viajante(request, id):
                 WHERE id_viajante = %s
             """, [nome, destino_favorito, data_cadastro, id])
         return redirect('listar_viajantes')
-    
+
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT nome, destino_favorito, data_de_cadastro
+            SELECT id_viajante, nome, destino_favorito, data_de_cadastro
             FROM viajantes
             WHERE id_viajante = %s
         """, [id])
         viajante = cursor.fetchone()
-    return render(request, 'app_viagens/editar_viajante.html', {
-        'viajante': viajante,
-        'id': id
-    })
+
+    return render(request, 'app_viagens/editar_viajante.html', {'viajante': viajante})
+
 def excluir_viajante(request, id):
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM viajantes WHERE id_viajante = %s", [id])
