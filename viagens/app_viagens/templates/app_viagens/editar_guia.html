@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Editar Guia</title>
+    <style>
+        body {
+            background-image: url('https://img.freepik.com/fotos-gratis/pinos-coloridos-multi-apontando-destinos-planejados-no-mapa_23-2147837130.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-color: orange;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        form {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            margin: 80px auto;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: orange;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkorange;
+        }
+        .btn-voltar {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'listar_guias' %}" class="btn-voltar">← Voltar para lista de guias</a>
+
+    <form method="POST">
+        {% csrf_token %}
+        <h2>Editar Guia</h2>
+        <input type="number" name="id_destino" placeholder="ID Destino" value="{{ guia.1 }}" required>
+        <input type="text" name="nome" placeholder="Nome" value="{{ guia.2 }}" required>
+        <input type="text" name="especialidade" placeholder="Especialidade" value="{{ guia.3 }}" required>
+        <input type="text" name="contato" placeholder="Contato" value="{{ guia.4 }}" required>
+        <button type="submit">Salvar Alterações</button>
+    </form>
+</body>
+</html>

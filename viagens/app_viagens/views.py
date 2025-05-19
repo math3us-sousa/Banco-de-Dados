@@ -90,14 +90,36 @@ def detalhes_destino(request, id):
 
 # ========== GUIAS LOCAIS ==========
 def listar_guias(request):
+    if request.method == 'POST':
+        id_destino = request.POST.get('id_destino')
+        nome = request.POST.get('nome')
+        especialidade = request.POST.get('especialidade')
+        contato = request.POST.get('contato')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO guias_locais (id_destino, nome, especialidade, contato)
+                VALUES (%s, %s, %s, %s)
+            """, [id_destino, nome, especialidade, contato])
+        return redirect('listar_guias')
+
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT g.id_guia, g.nome, g.especialidade, g.contato, d.nome 
+            SELECT g.id_guia, g.nome, g.especialidade, g.contato, d.nome
             FROM guias_locais g
             JOIN destinos d ON g.id_destino = d.id_destino
+            ORDER BY g.nome
         """)
         guias = cursor.fetchall()
-    return render(request, 'app_viagens/guias.html', {'guias': guias})
+
+        cursor.execute("SELECT id_destino, nome FROM destinos ORDER BY nome")
+        destinos = cursor.fetchall()
+
+    return render(request, 'app_viagens/guias.html', {
+        'guias': guias,
+        'destinos': destinos
+    })
+
 
 def inserir_guia(request):
     if request.method == 'POST':
@@ -119,24 +141,29 @@ def inserir_guia(request):
 
 def editar_guia(request, id):
     if request.method == 'POST':
+        id_destino = request.POST.get('id_destino')
         nome = request.POST.get('nome')
         especialidade = request.POST.get('especialidade')
         contato = request.POST.get('contato')
-        id_destino = request.POST.get('id_destino')
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE guias_locais
-                SET nome = %s, especialidade = %s, contato = %s, id_destino = %s
+                SET id_destino = %s, nome = %s, especialidade = %s, contato = %s
                 WHERE id_guia = %s
-            """, [nome, especialidade, contato, id_destino, id])
+            """, [id_destino, nome, especialidade, contato, id])
         return redirect('listar_guias')
-    
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT nome, especialidade, contato, id_destino FROM guias_locais WHERE id_guia = %s", [id])
+        cursor.execute("""
+            SELECT id_guia, id_destino, nome, especialidade, contato
+            FROM guias_locais
+            WHERE id_guia = %s
+        """, [id])
         guia = cursor.fetchone()
-        cursor.execute("SELECT id_destino, name FROM destinos")
-        destinos = cursor.fetchall()
-    return render(request, 'app_viagens/editar_guia.html', {'guia': guia, 'destinos': destinos, 'id': id})
+
+    return render(request, 'app_viagens/editar_guia.html', {'guia': guia})
+
 
 def excluir_guia(request, id):
     with connection.cursor() as cursor:
@@ -146,15 +173,51 @@ def excluir_guia(request, id):
 
 # ========== ROTEIROS DE VIAGENS ==========
 def listar_roteiros(request):
+    if request.method == 'POST':
+        id_usuario = request.POST.get('id_usuario')
+        data = request.POST.get('data')
+        descricao = request.POST.get('descricao')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO roteiros_de_viagens (id_usuario, data, descricao)
+                VALUES (%s, %s, %s)
+            """, [id_usuario, data, descricao])
+        return redirect('listar_roteiros')
+
+    id_busca = request.GET.get('id_busca')
+
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT r.id_roteiro, v.nome, r.data, r.descricao 
-            FROM roteiros_de_viagens r
-            JOIN viajantes v ON r.id_usuario = v.id_viajante
-            ORDER BY r.data DESC
-        """)
-        roteiros = cursor.fetchall()
-    return render(request, 'app_viagens/roteiros.html', {'roteiros': roteiros})
+        # Listagem
+        if id_busca:
+            cursor.execute("""
+                SELECT r.id_roteiro, v.nome, r.data, r.descricao
+                FROM roteiros_de_viagens r
+                JOIN viajantes v ON r.id_usuario = v.id_viajante
+                WHERE r.id_roteiro = %s
+                ORDER BY r.data DESC
+            """, [id_busca])
+            roteiros = cursor.fetchall()
+        else:
+            cursor.execute("""
+                SELECT r.id_roteiro, v.nome, r.data, r.descricao
+                FROM roteiros_de_viagens r
+                JOIN viajantes v ON r.id_usuario = v.id_viajante
+                ORDER BY r.data DESC
+            """)
+            roteiros = cursor.fetchall()
+
+        # Viajantes para dropdown
+        cursor.execute("SELECT id_viajante, nome FROM viajantes ORDER BY nome")
+        viajantes = cursor.fetchall()
+
+    return render(request, 'app_viagens/roteiros.html', {
+        'roteiros': roteiros,
+        'viajantes': viajantes
+    })
+
+
+
 
 def inserir_roteiro(request):
     if request.method == 'POST':
@@ -178,6 +241,7 @@ def editar_roteiro(request, id):
         id_usuario = request.POST.get('id_usuario')
         data = request.POST.get('data')
         descricao = request.POST.get('descricao')
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE roteiros_de_viagens
@@ -185,30 +249,74 @@ def editar_roteiro(request, id):
                 WHERE id_roteiro = %s
             """, [id_usuario, data, descricao, id])
         return redirect('listar_roteiros')
-    
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT id_usuario, data, descricao FROM roteiros_de_viagens WHERE id_roteiro = %s", [id])
+        cursor.execute("""
+            SELECT id_roteiro, id_usuario, data, descricao
+            FROM roteiros_de_viagens
+            WHERE id_roteiro = %s
+        """, [id])
         roteiro = cursor.fetchone()
-        cursor.execute("SELECT id_viajante, nome FROM viajantes")
-        viajantes = cursor.fetchall()
-    return render(request, 'app_viagens/editar_roteiro.html', {'roteiro': roteiro, 'id': id, 'viajantes': viajantes})
+
+    return render(request, 'app_viagens/editar_roteiro.html', {'roteiro': roteiro})
+
 
 def excluir_roteiro(request, id):
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM roteiros_de_viagens WHERE id_roteiro = %s", [id])
     return redirect('listar_roteiros')
 
+
 # ========== ITEM ROTEIRO ==========
 def listar_itens_roteiro(request):
+    if request.method == 'POST':
+        id_roteiro = request.POST.get('id_roteiro')
+        id_destino = request.POST.get('id_destino')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO item_roteiro (id_roteiro, id_destino)
+                VALUES (%s, %s)
+            """, [id_roteiro, id_destino])
+        return redirect('listar_itens_roteiro')
+
+    id_busca = request.GET.get('id_busca')
+
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT ir.id_roteiro, r.descricao, ir.id_destino, d.nome
-            FROM item_roteiro ir
-            JOIN roteiros_de_viagens r ON ir.id_roteiro = r.id_roteiro
-            JOIN destinos d ON ir.id_destino = d.id_destino
-        """)
-        itens = cursor.fetchall()
-    return render(request, 'app_viagens/item_roteiro.html', {'itens': itens})
+        # Itens listados
+        if id_busca:
+            cursor.execute("""
+                SELECT ir.id_roteiro, r.descricao, ir.id_destino, d.nome
+                FROM item_roteiro ir
+                JOIN roteiros_de_viagens r ON ir.id_roteiro = r.id_roteiro
+                JOIN destinos d ON ir.id_destino = d.id_destino
+                WHERE ir.id_roteiro = %s
+            """, [id_busca])
+            itens = cursor.fetchall()
+        else:
+            cursor.execute("""
+                SELECT ir.id_roteiro, r.descricao, ir.id_destino, d.nome
+                FROM item_roteiro ir
+                JOIN roteiros_de_viagens r ON ir.id_roteiro = r.id_roteiro
+                JOIN destinos d ON ir.id_destino = d.id_destino
+                ORDER BY ir.id_roteiro
+            """)
+            itens = cursor.fetchall()
+
+        # Dropdowns
+        cursor.execute("SELECT id_roteiro, descricao FROM roteiros_de_viagens ORDER BY descricao")
+        roteiros = cursor.fetchall()
+
+        cursor.execute("SELECT id_destino, nome FROM destinos ORDER BY nome")
+        destinos = cursor.fetchall()
+
+    return render(request, 'app_viagens/item_roteiro.html', {
+        'itens': itens,
+        'roteiros': roteiros,
+        'destinos': destinos,
+    })
+
+
 
 def inserir_item_roteiro(request):
     if request.method == 'POST':
@@ -236,21 +344,56 @@ def excluir_item_roteiro(request, roteiro_id, destino_id):
         """, [roteiro_id, destino_id])
     return redirect('listar_itens_roteiro')
 
-
 # ========== HISTÓRICO DE VIAGENS ==========
 def listar_historicos(request):
+    if request.method == 'POST':
+        id_roteiro = request.POST.get('id_roteiro')
+        id_usuario = request.POST.get('id_usuario')
+        data_da_viagem = request.POST.get('data_da_viagem')
+        avaliacao = request.POST.get('avaliacao_da_viagem')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO historico_de_viagens (id_roteiro, id_usuario, data_da_viagem, avaliacao_da_viagem)
+                VALUES (%s, %s, %s, %s)
+            """, [id_roteiro, id_usuario, data_da_viagem, avaliacao])
+        return redirect('listar_historicos')
+
+    id_busca = request.GET.get('id_busca')
+
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT h.id_historico, r.descricao, v.nome, h.data_da_viagem, 
-                   h.avaliacao_da_viagem
-            FROM historico_de_viagens h
-            JOIN roteiros_de_viagens r ON h.id_roteiro = r.id_roteiro
-            JOIN viajantes v ON h.id_usuario = v.id_viajante
-            WHERE h.data_da_viagem IS NOT NULL
-            ORDER BY h.data_da_viagem DESC
-        """)
-        historicos = cursor.fetchall()
-    return render(request, 'app_viagens/historicos.html', {'historicos': historicos})
+        # Listagem
+        if id_busca:
+            cursor.execute("""
+                SELECT h.id_historico, r.descricao, v.nome, h.data_da_viagem, h.avaliacao_da_viagem
+                FROM historico_de_viagens h
+                JOIN roteiros_de_viagens r ON h.id_roteiro = r.id_roteiro
+                JOIN viajantes v ON h.id_usuario = v.id_viajante
+                WHERE h.id_historico = %s
+            """, [id_busca])
+            historicos = cursor.fetchall()
+        else:
+            cursor.execute("""
+                SELECT h.id_historico, r.descricao, v.nome, h.data_da_viagem, h.avaliacao_da_viagem
+                FROM historico_de_viagens h
+                JOIN roteiros_de_viagens r ON h.id_roteiro = r.id_roteiro
+                JOIN viajantes v ON h.id_usuario = v.id_viajante
+                ORDER BY h.data_da_viagem DESC
+            """)
+            historicos = cursor.fetchall()
+
+        # Dropdowns
+        cursor.execute("SELECT id_roteiro, descricao FROM roteiros_de_viagens ORDER BY descricao")
+        roteiros = cursor.fetchall()
+
+        cursor.execute("SELECT id_viajante, nome FROM viajantes ORDER BY nome")
+        viajantes = cursor.fetchall()
+
+    return render(request, 'app_viagens/historicos.html', {
+        'historicos': historicos,
+        'roteiros': roteiros,
+        'viajantes': viajantes
+    })
 
 def inserir_historico(request):
     if request.method == 'POST':
@@ -277,38 +420,34 @@ def inserir_historico(request):
 
 def editar_historico(request, id):
     if request.method == 'POST':
-        id_usuario = request.POST.get('id_usuario')
         id_roteiro = request.POST.get('id_roteiro')
-        data_viagem = request.POST.get('data_viagem')
-        comentario = request.POST.get('comentario')
+        id_usuario = request.POST.get('id_usuario')
+        data = request.POST.get('data_da_viagem')
+        avaliacao = request.POST.get('avaliacao_da_viagem')
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE historico_de_viagens
-                SET id_usuario = %s, id_roteiro = %s, data_viagem = %s, comentario = %s
+                SET id_roteiro = %s, id_usuario = %s, data_da_viagem = %s, avaliacao_da_viagem = %s
                 WHERE id_historico = %s
-            """, [id_usuario, id_roteiro, data_viagem, comentario, id])
-        return redirect('listar_historico')
-    
+            """, [id_roteiro, id_usuario, data, avaliacao, id])
+        return redirect('listar_historicos')
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT id_usuario, id_roteiro, data_viagem, comentario FROM historico_de_viagens WHERE id_historico = %s", [id])
+        cursor.execute("""
+            SELECT id_historico, id_roteiro, id_usuario, data_da_viagem, avaliacao_da_viagem
+            FROM historico_de_viagens
+            WHERE id_historico = %s
+        """, [id])
         historico = cursor.fetchone()
-        cursor.execute("SELECT id_viajante, nome FROM viajantes")
-        viajantes = cursor.fetchall()
-        cursor.execute("SELECT id_roteiro, descricao FROM roteiros_de_viagens")
-        roteiros = cursor.fetchall()
-    return render(request, 'app_viagens/editar_historico.html', {
-        'historico': historico,
-        'id': id,
-        'viajantes': viajantes,
-        'roteiros': roteiros
-    })
+
+    return render(request, 'app_viagens/editar_historico.html', {'historico': historico})
+
 
 def excluir_historico(request, id):
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM historico_de_viagens WHERE id_historico = %s", [id])
-    return redirect('listar_historico')
-
-
+    return redirect('listar_historicos')
 
 # ========== VIAJANTES ==========
 

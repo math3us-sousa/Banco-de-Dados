@@ -1,14 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
-    {% load static %}
 <head>
     <meta charset="utf-8">
     <title>Históricos</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
+        /* Estilos mantidos como antes + ajustes */
+        * { margin: 0; padding: 0; }
         body {
             background-image: url('https://img.freepik.com/fotos-gratis/pinos-coloridos-multi-apontando-destinos-planejados-no-mapa_23-2147837130.jpg');
             background-size: cover;
@@ -16,103 +14,80 @@
             background-position: center center;
             height: 100vh;
             background-color: orange;
-            position: relative;
-            z-index: 1;
-        }
-        .botao-voltar {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-        .btn-voltar {
-            display: inline-block;
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border: 2px solid white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 16px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .btn-voltar:hover {
-            background-color: white;
-            color: orange;
+            font-family: Arial, sans-serif;
         }
         .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 165, 0, 0.7);
-            z-index: 0;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 165, 0, 0.7); z-index: 0;
         }
         header.topo {
-            position: relative;
-            width: 100%;
-            padding: 10px 20px;
-            height: 80px;
-            background: transparent;
-            z-index: 2;
+            position: relative; width: 100%; padding: 10px 20px;
+            height: 80px; background: transparent; z-index: 2;
         }
         .titulo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 28px;
-            color: white;
+            font-size: 28px; color: white;
         }
         .historicos {
-            position: relative;
-            z-index: 2;
-            padding: 20px;
-            text-align: center;
-            margin-top: 30px;
+            position: relative; z-index: 2;
+            padding: 20px; text-align: center; margin-top: 30px;
         }
         table {
-            width: 100%;
-            max-width: 900px;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background-color: rgba(255, 255, 255, 0.9);
+            width: 100%; max-width: 900px; margin: 20px auto;
+            border-collapse: collapse; background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
         }
         table th, table td {
-            padding: 12px;
-            border: 1px solid #ddd;
+            padding: 12px; border: 1px solid #ddd;
         }
         table th {
-            background-color: orange;
-            color: white;
-            font-weight: bold;
+            background-color: orange; color: white;
         }
-        table td {
-            color: black;
-        }
-        form {
-            margin-top: 30px;
-        }
-        form input, form textarea {
-            padding: 10px;
-            margin: 5px;
-            width: 200px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        table td { color: black; }
+        form { margin-top: 30px; }
+        form input, form button {
+            padding: 10px; margin: 5px; width: 200px;
+            border-radius: 5px; border: 1px solid #ccc;
         }
         form button {
-            padding: 10px 20px;
-            background-color: orange;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: orange; color: white;
+            border: none; cursor: pointer;
         }
-        form button:hover {
-            background-color: darkorange;
+        form button:hover { background-color: darkorange; }
+        .botao-voltar {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
         }
+        .btn-voltar {
+            display: inline-block; background-color: rgba(255, 255, 255, 0.2);
+            color: white; padding: 12px 24px; border: 2px solid white;
+            border-radius: 8px; text-decoration: none; font-size: 18px;
+        }
+        .btn-voltar:hover { background-color: white; color: orange; }
+
+        form select,
+            form input[type="date"],
+            form input[type="text"],
+            form button {
+                padding: 10px;
+                margin: 5px;
+                width: 200px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                box-sizing: border-box;
+            }
+
+            form button {
+                background-color: orange;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+
+            form button:hover {
+                background-color: darkorange;
+            }
+
     </style>
 </head>
 <body>
@@ -122,14 +97,21 @@
     </header>
 
     <main class="historicos">
+        <!-- 🔍 Busca por ID -->
+        <form method="GET">
+            <input type="number" name="id_busca" placeholder="Buscar por ID do Histórico">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <!-- 📋 Tabela -->
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Roteiro</th>
                     <th>Viajante</th>
-                    <th>Data da Viagem</th>
-                    <th>Comentário</th>
+                    <th>Data</th>
+                    <th>Avaliação</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -141,25 +123,44 @@
                     <td>{{ h.2 }}</td>
                     <td>{{ h.3 }}</td>
                     <td>{{ h.4 }}</td>
-                    <td><!-- ações --></td>
+                    <td>
+                        <a href="{% url 'editar_historico' h.0 %}">Editar</a> |
+                        <a href="{% url 'excluir_historico' h.0 %}" onclick="return confirm('Excluir este histórico?');">Excluir</a>
+                    </td>
                 </tr>
+                {% empty %}
+                <tr><td colspan="6">Nenhum histórico encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <div class="botao-voltar">
-            <a href="{% url 'tela_inicial' %}" class="btn-voltar">Voltar para Início</a>
-        </div>
-
+        <!-- ➕ Inserção -->
         <h2>Adicionar Novo Histórico</h2>
         <form method="POST">
             {% csrf_token %}
-            <input type="text" name="id_usuario" placeholder="ID do Viajante" required>
-            <input type="text" name="id_roteiro" placeholder="ID do Roteiro" required>
-            <input type="date" name="data_viagem" placeholder="Data da Viagem" required>
-            <textarea name="comentario" placeholder="Comentário"></textarea>
+            <select name="id_roteiro" required>
+                <option value="">-- Selecione o Roteiro --</option>
+                {% for r in roteiros %}
+                    <option value="{{ r.0 }}">{{ r.1 }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="id_usuario" required>
+                <option value="">-- Selecione o Viajante --</option>
+                {% for v in viajantes %}
+                    <option value="{{ v.0 }}">{{ v.1 }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="date" name="data_da_viagem" required>
+            <input type="text" name="avaliacao_da_viagem" placeholder="Avaliação" required>
             <button type="submit">Cadastrar</button>
         </form>
+
+        <!-- 🔙 Voltar -->
+        <div class="botao-voltar">
+            <a href="{% url 'tela_inicial' %}" class="btn-voltar">Voltar para Início</a>
+        </div>
     </main>
 </body>
 </html>
