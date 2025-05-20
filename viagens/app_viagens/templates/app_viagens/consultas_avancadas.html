@@ -54,7 +54,7 @@
 <body>
     <h1>Consultas Avançadas</h1>
 
-    <h2>1. Média de avaliações por destino (AVG + GROUP BY)</h2>
+    <h2>1. Média de avaliações por destino </h2>
     <table>
         <tr>
             <th>Destino</th>
@@ -63,12 +63,12 @@
         {% for destino, media in media_avaliacoes %}
         <tr>
             <td>{{ destino }}</td>
-            <td>{{ media }}</td>
+            <td>{{ media|floatformat:2 }}</td>
         </tr>
         {% endfor %}
     </table>
 
-    <h2>2. Viajantes com mais viagens este ano (IN + COUNT)</h2>
+    <h2>2. Viajantes com mais viagens este ano</h2>
     <table>
         <tr>
             <th>Nome</th>
@@ -82,7 +82,7 @@
         {% endfor %}
     </table>
 
-    <h2>3. Destinos não visitados (NOT EXISTS)</h2>
+    <h2>3. Destinos não visitados </h2>
     <table>
         <tr>
             <th>Destino</th>
@@ -94,33 +94,61 @@
         {% endfor %}
     </table>
 
-    <h2>4. Destinos com nome começando com "B" e ID entre 1 e 10 (LIKE + BETWEEN)</h2>
-    <table>
-        <tr>
-            <th>Nome</th>
-            <th>Localização</th>
-        </tr>
-        {% for nome, localizacao in destinos_b_between %}
-        <tr>
-            <td>{{ nome }}</td>
-            <td>{{ localizacao }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h2>4. Destinos com nome começando com uma letra e ID entre dois valores</h2>
 
-    <h2>5. União entre destinos e destinos_backup (UNION)</h2>
-    <table>
+<form method="get" action="{% url 'consultas_avancadas' %}">
+    <label for="letra">Letra inicial do nome:</label>
+    <input type="text" name="letra" id="letra" maxlength="1" required>
+
+    <label for="id_min">ID mínimo:</label>
+    <input type="number" name="id_min" id="id_min" required min="0">
+
+    <label for="id_max">ID máximo:</label>
+    <input type="number" name="id_max" id="id_max" required min="0">
+
+    <button type="submit">Buscar</button>
+</form>
+
+<table>
+    <tr>
+        <th>Nome</th>
+        <th>Localização</th>
+    </tr>
+    {% for nome, localizacao in destinos_b_between %}
+    <tr>
+        <td>{{ nome }}</td>
+        <td>{{ localizacao }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2">Nenhum resultado encontrado.</td></tr>
+    {% endfor %}
+</table>
+
+
+    <h2>5. União entre Destinos Atuais e de Backup</h2>
+<p>Esta tabela mostra todos os destinos registrados, incluindo os da tabela de backup.</p>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead style="background-color: #f2f2f2;">
         <tr>
-            <th>Destino</th>
+            <th>Nome do Destino</th>
         </tr>
+    </thead>
+    <tbody>
         {% for destino in destinos_union %}
         <tr>
             <td>{{ destino.0 }}</td>
         </tr>
+        {% empty %}
+        <tr>
+            <td colspan="1">Nenhum destino encontrado.</td>
+        </tr>
         {% endfor %}
-    </table>
+    </tbody>
+</table>
 
-    <h2>6. Destinos presentes em qualquer item de roteiro (ANY)</h2>
+
+    <h2>6. Destinos presentes em qualquer item de roteiro</h2>
     <table>
         <tr>
             <th>Nome</th>
@@ -132,31 +160,47 @@
         {% endfor %}
     </table>
 
-    <h2>7. Destinos que aparecem em todos os roteiros (ALL)</h2>
-    <table>
+    <h2>7. Destinos Presentes em Todos os Roteiros</h2>
+<p>Esta tabela exibe os destinos que aparecem em <strong>todos</strong> os roteiros cadastrados.</p>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead style="background-color: #f2f2f2;">
         <tr>
-            <th>Nome</th>
+            <th>Nome do Destino</th>
         </tr>
+    </thead>
+    <tbody>
         {% for nome in destinos_all %}
         <tr>
             <td>{{ nome.0 }}</td>
         </tr>
+        {% empty %}
+        <tr>
+            <td colspan="1">Nenhum destino aparece em todos os roteiros.</td>
+        </tr>
         {% endfor %}
-    </table>
+    </tbody>
+</table>
 
-    <h2>8. Agregações (MIN, MAX, COUNT, SUM)</h2>
-    <table>
-        <tr>
-            <th>Mínima</th>
-            <th>Máxima</th>
-            <th>Total</th>
-        </tr>
-        <tr>
-            <td>{{ agregacoes.min }}</td>
-            <td>{{ agregacoes.max }}</td>
-            <td>{{ agregacoes.total }}</td>
-        </tr>
-    </table>
+
+    <h2>8. Estatísticas das Avaliações de Viagem</h2>
+<p style="text-align: center; margin-bottom: 10px;">Esta tabela mostra o valor mais baixo, mais alto e a quantidade total de avaliações registradas no histórico de viagens.</p>
+
+<table>
+    <tr>
+        <th>Menor Avaliação</th>
+        <th>Maior Avaliação</th>
+        <th>Total de Avaliações</th>
+        <th>Soma das Avaliações</th>
+    </tr>
+    <tr>
+        <td>{{ agregacoes.min }}</td>
+        <td>{{ agregacoes.max }}</td>
+        <td>{{ agregacoes.total }}</td>
+        <td>{{ agregacoes.sum }}</td>
+    </tr>
+</table>
+
 
     <div class="voltar">
         <a href="{% url 'tela_inicial' %}">Voltar à Tela Inicial</a>

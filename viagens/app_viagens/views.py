@@ -540,10 +540,15 @@ def excluir_viajante(request, id):
 
    # ========== CONSULTAS COMPLEXAS ==========
 def consultas_avancadas(request):
-    # Consulta 1: Média de avaliações por destino (GROUP BY)
+    letra = request.GET.get('letra', '').strip()
+    id_min = request.GET.get('id_min')
+    id_max = request.GET.get('id_max')
+
     with connection.cursor() as cursor:
+
+        # 1. Média de avaliações por destino
         cursor.execute("""
-            SELECT d.nome, AVG(h.avaliacao_da_viagem::numeric) as media_avaliacao
+            SELECT d.nome, AVG(h.avaliacao_da_viagem::numeric) AS media_avaliacao
             FROM historico_de_viagens h
             JOIN roteiros_de_viagens r ON h.id_roteiro = r.id_roteiro
             JOIN item_roteiro ir ON r.id_roteiro = ir.id_roteiro
@@ -554,23 +559,23 @@ def consultas_avancadas(request):
         """)
         media_avaliacoes = cursor.fetchall()
 
-    # Consulta 2: Viajantes com mais viagens (Subconsulta com IN)
-    with connection.cursor() as cursor:
+        # 2. Viajantes com mais viagens este ano
         cursor.execute("""
-            SELECT v.nome, COUNT(h.id_historico) as total_viagens
+            SELECT v.nome, COUNT(h.id_historico) AS total_viagens
             FROM viajantes v
             JOIN historico_de_viagens h ON v.id_viajante = h.id_usuario
             WHERE v.id_viajante IN (
-                SELECT id_usuario 
-                FROM historico_de_viagens 
+                SELECT id_usuario
+                FROM historico_de_viagens
                 WHERE EXTRACT(YEAR FROM data_da_viagem) = EXTRACT(YEAR FROM CURRENT_DATE)
+                GROUP BY id_usuario
+            )
             GROUP BY v.nome
             ORDER BY total_viagens DESC
         """)
         viajantes_ativos = cursor.fetchall()
 
-    # Consulta 3: Destinos não visitados (EXISTS/NOT EXISTS)
-    with connection.cursor() as cursor:
+        # 3. Destinos não visitados
         cursor.execute("""
             SELECT d.nome
             FROM destinos d
@@ -583,9 +588,80 @@ def consultas_avancadas(request):
         """)
         destinos_nao_visitados = cursor.fetchall()
 
-    return render(request, 'app_viagens/consultas.html', {
+        # 4. Consulta dinâmica com LIKE + BETWEEN
+        if letra and id_min and id_max:
+            cursor.execute("""
+                SELECT nome, localizacao
+                FROM destinos
+                WHERE nome ILIKE %s AND id_destino BETWEEN %s AND %s
+            """, [letra + '%', id_min, id_max])
+            destinos_b_between = cursor.fetchall()
+        else:
+            destinos_b_between = []
+
+        # 5. União de destinos
+        cursor.execute("""
+            SELECT nome FROM destinos WHERE id_destino <= 5
+            UNION
+            SELECT nome FROM destinos WHERE id_destino > 5
+        """)
+        destinos_union = cursor.fetchall()
+
+        # 6. Destinos em qualquer roteiro
+        cursor.execute("""
+            SELECT nome
+            FROM destinos
+            WHERE id_destino = ANY (
+                SELECT id_destino FROM item_roteiro
+            )
+        """)
+        destinos_any = cursor.fetchall()
+
+        # 7. Destinos em todos os roteiros
+        cursor.execute("SELECT COUNT(*) FROM roteiros_de_viagens")
+        total_roteiros = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT d.nome
+            FROM destinos d
+            WHERE d.id_destino IN (
+                SELECT ir.id_destino
+                FROM item_roteiro ir
+                GROUP BY ir.id_destino
+                HAVING COUNT(DISTINCT ir.id_roteiro) = %s
+            )
+        """, [total_roteiros])
+        destinos_all = cursor.fetchall()
+
+        # 8. Estatísticas das avaliações
+        cursor.execute("""
+            SELECT 
+                MIN(avaliacao_da_viagem::integer),
+                MAX(avaliacao_da_viagem::integer),
+                COUNT(*),
+                SUM(avaliacao_da_viagem::integer)
+            FROM historico_de_viagens
+        """)
+        min_val, max_val, total_count, sum_val = cursor.fetchone()
+        agregacoes = {
+            'min': min_val,
+            'max': max_val,
+            'total': total_count,
+            'sum': sum_val
+        }
+
+    return render(request, 'app_viagens/consultas_avancadas.html', {
         'media_avaliacoes': media_avaliacoes,
         'viajantes_ativos': viajantes_ativos,
-        'destinos_nao_visitados': destinos_nao_visitados
+        'destinos_nao_visitados': destinos_nao_visitados,
+        'destinos_b_between': destinos_b_between,
+        'destinos_union': destinos_union,
+        'destinos_any': destinos_any,
+        'destinos_all': destinos_all,
+        'agregacoes': agregacoes,
     })
+
+
+
+
  

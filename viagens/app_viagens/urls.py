@@ -42,6 +42,7 @@ urlpatterns = [
     path('historicos/editar/<int:id>/', views.editar_historico, name='editar_historico'),
     path('historicos/excluir/<int:id>/', views.excluir_historico, name='excluir_historico'),
     
-   
+   # Consultas Avançadas
+    path('consultas/', views.consultas_avancadas, name='consultas_avancadas'),
     
 ]

@@ -70,7 +70,7 @@ class Viajantes(models.Model):
     id_viajante = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
     destino_favorito = models.CharField(max_length=100, blank=True, null=True)
-    data_de_cadastro = models.DateField()  # Nome corrigido (era data_de_cadastr)
+    data_de_cadastro = models.DateField()  
 
     class Meta:
         app_label = 'app_viagens'
@@ -83,7 +83,7 @@ class HistoricoViagens(models.Model):
     id_roteiro = models.ForeignKey(RoteirosViagens, on_delete=models.DO_NOTHING, db_column='id_roteiro')
     id_usuario = models.ForeignKey('Viajantes', on_delete=models.DO_NOTHING, db_column='id_usuario')
     data_da_viagem = models.DateField()
-    avaliacao_da_viagem = models.TextField(blank=True, null=True)  # Tipo text, não integer
+    avaliacao_da_viagem = models.TextField(blank=True, null=True)  
 
     class Meta:
         app_label = 'app_viagens'
