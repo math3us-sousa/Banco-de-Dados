@@ -38,20 +38,30 @@ def listar_destinos(request):
 
     return render(request, 'app_viagens/destinos.html', {'destinos': destinos})
 
+from django.contrib import messages
+
 def inserir_destino(request):
     if request.method == 'POST':
-        nome = request.POST.get('nome')
+        name = request.POST.get('name')
         localizacao = request.POST.get('localizacao')
+
         try:
             with connection.cursor() as cursor:
+                # Verifica duplicidade
+                cursor.execute("SELECT 1 FROM destinos WHERE name = %s", [name])
+                if cursor.fetchone():
+                    messages.error(request, 'Já existe um destino com esse nome.')
+                    return redirect('listar_destinos')
+
                 cursor.execute(
-                    "INSERT INTO destinos (nome, localizacao) VALUES (%s, %s)",
-                    [nome, localizacao]
+                    "INSERT INTO destinos (name, localizacao) VALUES (%s, %s)",
+                    [name, localizacao]
                 )
             return redirect('listar_destinos')
+
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    return render(request, 'app_viagens/inserir_destino.html')
+            messages.error(request, f'Erro: {str(e)}')
+            return redirect('listar_destinos')
 
 def editar_destino(request, id):
     if request.method == 'POST':
@@ -394,6 +404,10 @@ def listar_historicos(request):
         'roteiros': roteiros,
         'viajantes': viajantes
     })
+    avaliacao = int(request.POST.get('avaliacao_da_viagem'))
+    if not (0 <= avaliacao <= 10):
+        return JsonResponse({'erro': 'A avaliação deve ser entre 0 e 10.'}, status=400)
+
 
 def inserir_historico(request):
     if request.method == 'POST':

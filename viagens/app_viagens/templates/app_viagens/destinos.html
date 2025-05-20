@@ -66,6 +66,14 @@
     </style>
 </head>
 <body>
+    {% if messages %}
+        <div style="text-align:center; color: red; font-weight: bold;">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div class="overlay"></div>
     <header class="topo">
         <h1 class="titulo">Destinos</h1>
@@ -107,6 +115,10 @@
 
         <!-- ➕ Cadastro -->
         <h2>Adicionar Novo Destino</h2>
+        {% if erro %}
+            <p style="color: red; font-weight: bold;">{{ erro }}</p>
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
             <input type="text" name="nome" placeholder="Nome" required>

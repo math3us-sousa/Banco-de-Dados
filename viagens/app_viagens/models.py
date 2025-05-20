@@ -32,7 +32,7 @@ class GuiasLocais(models.Model):
 
 class RoteirosViagens(models.Model):
     id_roteiro = models.AutoField(primary_key=True)
-    id_usuario = models.ForeignKey('Viajantes', on_delete=models.CASCADE, db_column='id_usuario')  # Novo campo
+    id_usuario = models.ForeignKey('Viajantes', on_delete=models.CASCADE, db_column='id_usuario') 
     data = models.DateField()
     descricao = models.TextField()
 

@@ -86,6 +86,7 @@ DATABASES = {
         'OPTIONS': {
             'client_encoding': 'UTF8',
             'isolation_level': psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED,
+            'options': '-c search_path=app_viagens,public'
         },
     }
 }

@@ -44,6 +44,7 @@
     </style>
 </head>
 <body>
+    {% now "Y-m-d" as today %}
     <div class="overlay"></div>
     <header class="topo">
         <h1 class="titulo">Viajantes</h1>
@@ -92,7 +93,7 @@
             {% csrf_token %}
             <input type="text" name="nome" placeholder="Nome" required>
             <input type="text" name="destino_favorito" placeholder="Destino Favorito" required>
-            <input type="date" name="data_cadastro" required>
+            <input type="date" name="data_de_cadastro" required max="{{ today }}">
             <button type="submit">Cadastrar</button>
         </form>
 
