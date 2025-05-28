@@ -126,7 +126,7 @@
 
 
     <h2>5. União entre Destinos Atuais e de Backup</h2>
-<p>Esta tabela mostra todos os destinos registrados, incluindo os da tabela de backup.</p>
+<p>Esta tabela mostra todos os destinos registrados</p>
 
 <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
     <thead style="background-color: #f2f2f2;">
@@ -201,9 +201,43 @@
     </tr>
 </table>
 
-
-    <div class="voltar">
-        <a href="{% url 'tela_inicial' %}">Voltar à Tela Inicial</a>
-    </div>
 </body>
 </html>
+<h2>9. Viajantes com Destino Favorito Definido </h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Destino Favorito</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id, nome, destino in viajantes_com_destino %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>{{ nome }}</td>
+            <td>{{ destino }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h2>10. Destinos com ID maior que todos que começam com "Z" </h2>
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for nome in destinos_maior_que_z %}
+        <tr>
+            <td>{{ nome }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="voltar">
+        <a href="{% url 'tela_inicial' %}">Voltar à Tela Inicial</a>
+    </div>

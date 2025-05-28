@@ -8,7 +8,7 @@ def tela_inicial(request):
 # ========== DESTINOS ==========
 def listar_destinos(request):
     if request.method == 'POST':
-        nome = request.POST.get('nome')
+        nome = request.POST.get('nome') #UNIQUE
         localizacao = request.POST.get('localizacao')
 
         with connection.cursor() as cursor:
@@ -217,7 +217,6 @@ def listar_roteiros(request):
             """)
             roteiros = cursor.fetchall()
 
-        # Viajantes para dropdown
         cursor.execute("SELECT id_viajante, nome FROM viajantes ORDER BY nome")
         viajantes = cursor.fetchall()
 
@@ -225,9 +224,6 @@ def listar_roteiros(request):
         'roteiros': roteiros,
         'viajantes': viajantes
     })
-
-
-
 
 def inserir_roteiro(request):
     if request.method == 'POST':
@@ -269,7 +265,6 @@ def editar_roteiro(request, id):
         roteiro = cursor.fetchone()
 
     return render(request, 'app_viagens/editar_roteiro.html', {'roteiro': roteiro})
-
 
 def excluir_roteiro(request, id):
     with connection.cursor() as cursor:
@@ -469,20 +464,19 @@ def listar_viajantes(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         destino_favorito = request.POST.get('destino_favorito')
-        data_cadastro = request.POST.get('data_cadastro')
 
         with connection.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO viajantes (nome, destino_favorito, data_de_cadastro)
-                VALUES (%s, %s, %s)
-            """, [nome, destino_favorito, data_cadastro])
+                INSERT INTO viajantes (nome, destino_favorito)
+                VALUES (%s, %s)
+            """, [nome, destino_favorito])
         return redirect('listar_viajantes')
 
     id_busca = request.GET.get('id_busca')
     if id_busca:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT id_viajante, nome, destino_favorito, data_de_cadastro
+                SELECT id_viajante, nome, destino_favorito
                 FROM viajantes
                 WHERE id_viajante = %s
             """, [id_busca])
@@ -490,7 +484,7 @@ def listar_viajantes(request):
     else:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT id_viajante, nome, destino_favorito, data_de_cadastro
+                SELECT id_viajante, nome, destino_favorito
                 FROM viajantes
                 ORDER BY nome
             """)
@@ -501,31 +495,28 @@ def inserir_viajante(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         destino_favorito = request.POST.get('destino_favorito')
-        data_cadastro = request.POST.get('data_cadastro')
         with connection.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO viajantes (nome, destino_favorito, data_de_cadastro)
+                INSERT INTO viajantes (nome, destino_favorito)
                 VALUES (%s, %s, %s)
-            """, [nome, destino_favorito, data_cadastro])
+            """, [nome, destino_favorito])
         return redirect('listar_viajantes')
     return render(request, 'app_viagens/inserir_viajante.html')
 def editar_viajante(request, id):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         destino_favorito = request.POST.get('destino_favorito')
-        data_cadastro = request.POST.get('data_cadastro')
-
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE viajantes
-                SET nome = %s, destino_favorito = %s, data_de_cadastro = %s
+                SET nome = %s, destino_favorito = %s
                 WHERE id_viajante = %s
-            """, [nome, destino_favorito, data_cadastro, id])
+            """, [nome, destino_favorito, id])
         return redirect('listar_viajantes')
 
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT id_viajante, nome, destino_favorito, data_de_cadastro
+            SELECT id_viajante, nome, destino_favorito
             FROM viajantes
             WHERE id_viajante = %s
         """, [id])
@@ -649,6 +640,27 @@ def consultas_avancadas(request):
             'total': total_count,
             'sum': sum_val
         }
+        # 9. Viajantes com destino favorito preenchido (IS NOT NULL)
+        cursor.execute("""
+            SELECT id_viajante, nome, destino_favorito
+            FROM viajantes
+            WHERE destino_favorito IS NOT NULL
+            ORDER BY nome;
+        """)
+        viajantes_com_destino = cursor.fetchall()
+        # 10. Destinos com ID maior que todos os destinos que começam com Z
+        cursor.execute("""
+            SELECT nome
+            FROM destinos
+            WHERE id_destino > ALL (
+                SELECT id_destino
+                FROM destinos
+                WHERE nome LIKE 'Z%'
+            )
+        """)
+        destinos_maior_que_z = cursor.fetchall()
+
+
 
     return render(request, 'app_viagens/consultas_avancadas.html', {
         'media_avaliacoes': media_avaliacoes,
@@ -659,9 +671,6 @@ def consultas_avancadas(request):
         'destinos_any': destinos_any,
         'destinos_all': destinos_all,
         'agregacoes': agregacoes,
+        'viajantes_com_destino': viajantes_com_destino,
+        'destinos_maior_que_z': destinos_maior_que_z,
     })
-
-
-
-
- 
